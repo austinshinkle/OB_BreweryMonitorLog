@@ -11,3 +11,7 @@ https://sandyjmacdonald.github.io/2021/12/29/setting-up-influxdb-and-grafana-on-
 
 ### Python code uses this repository
 https://github.com/influxdata/influxdb-python
+Install the library on Raspberry Pi using this command
+```
+sudo apt install python3-influxdb
+```
