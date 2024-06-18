@@ -8,3 +8,6 @@ https://grafana.com/tutorials/install-grafana-on-raspberry-pi/
 
 ### Used this as a reference as well to connect InfluxDB to Grafana
 https://sandyjmacdonald.github.io/2021/12/29/setting-up-influxdb-and-grafana-on-the-raspberry-pi-4/
+
+### Python code uses this repository
+https://github.com/influxdata/influxdb-python
