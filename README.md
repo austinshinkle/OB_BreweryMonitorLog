@@ -15,3 +15,15 @@ Install the library on Raspberry Pi using this command
 ```
 sudo apt install python3-influxdb
 ```
+
+
+```
+> SELECT value FROM temperature
+name: temperature
+time                value
+----                -----
+1718735181233678885 65
+1718735189609397142 80
+1718735194185828797 25
+1718735200258097674 55
+```
