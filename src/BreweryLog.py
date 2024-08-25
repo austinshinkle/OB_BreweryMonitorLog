@@ -1,19 +1,13 @@
-import argparse
-
 # system imports
 from time import sleep
+import argparse
 import threading
 import socket
 import json
 
-import math
-from datetime import datetime
-import time
-
+# Influx db imports
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
-
-from ISOtime import get_current_iso_time
 
 # DEBUG LEVEL
 DEBUG = 1
@@ -23,17 +17,13 @@ server_ip = "ashinkl-rpiz2w"
 server_port = 12345
 
 # db information (test for now)
+# hostname and port 127.0.0.1:8086
 USER = 'ashinkl'
 PASSWORD = 'ashinkl123'
-DBNAME = 'TestDB'
 BUCKET = 'OstentatiousBrewing'
 INFLUXDB_API_TOKEN = 'l8yvgryXx262i3ilLlDo4CTaxOJPPfFaAtvuU7w8_Pm6BCyAV-LeDqLC4BO9qDPZPzlTtHPUcxFHWF21tKVx2Q=='
-
-DB_WRITE_FREQ = 5
-count = 0
-
-host = "127.0.0.1" #check this
-port = 8086 #check this
+INFLUXDB_ORG = 'home'
+DB_WRITE_FREQ = 10
 
 # global variables to communicate between threads
 terminate_thread = 0
@@ -54,7 +44,6 @@ def get_sensor_data():
 	
 	while not terminate_thread:
 		
-
 		print("Running Thread: get_sensor_data")
 		
 		try:
@@ -88,6 +77,7 @@ def get_sensor_data():
 			fermentation_chamber_temp_2 = sensor_data["FermentationChamberTemp2_F"]
 			kegerator_temp = sensor_data["KegeratorTemp_F"]
 
+			# inform the other thread new data is available
 			new_data_avail = True
 
 			client_socket.close()
@@ -119,23 +109,21 @@ def write_data_to_db():
 
 		try:
 
+			# only write data if it is not stale
 			if new_data_avail:
-				
-				# Write points
-				#client.write_points(points) sensor_data["KegeratorTemp_F"]
 
 				print("Writing values to database...")
 
+				# create a point and write it to the database - Fermentation Chamber Temperature 1
 				p = Point("Fermentation Chamber").tag("location", "Chamber 1").field("temperature", fermentation_chamber_temp_1)
 				write_api.write(bucket=BUCKET, record=p)	
 
+				# create a point and write it to the database - Fermentation Chamber Temperature 2
 				p = Point("Fermentation Chamber").tag("location", "Chamber 2").field("temperature", fermentation_chamber_temp_2)
 				write_api.write(bucket=BUCKET, record=p)
 
+				# set the data to stale
 				new_data_avail = False
-
-
-
 
 		except ConnectionRefusedError:
 			print("Cannot connect to server...will try again later.")
@@ -151,6 +139,7 @@ try:
 	client = InfluxDBClient(url="http://localhost:8086", token=INFLUXDB_API_TOKEN, org='home')
 	#client = InfluxDBClient.from_config_file("influx_db_config.ini") --> fix this...
 
+	# create the apis to send data to the database
 	write_api = client.write_api(write_options=SYNCHRONOUS)
 	query_api = client.query_api()
 	
@@ -158,7 +147,7 @@ try:
 	thread_get_sensor_data = threading.Thread(target=get_sensor_data)
 	thread_get_sensor_data.start()	
 
-	# start the thread to get the information from the server
+	# start the thread to write the information to the database
 	thread_write_data_to_db = threading.Thread(target=write_data_to_db)
 	thread_write_data_to_db.start()
 
