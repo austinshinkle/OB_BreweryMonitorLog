@@ -29,6 +29,9 @@ DBNAME = 'TestDB'
 BUCKET = 'OstentatiousBrewing'
 INFLUXDB_API_TOKEN = 'l8yvgryXx262i3ilLlDo4CTaxOJPPfFaAtvuU7w8_Pm6BCyAV-LeDqLC4BO9qDPZPzlTtHPUcxFHWF21tKVx2Q=='
 
+DB_WRITE_FREQ = 5
+count = 0
+
 host = "127.0.0.1" #check this
 port = 8086 #check this
 
@@ -108,6 +111,7 @@ def write_data_to_db():
 	global fermentation_chamber_temp_2
 	global kegerator_temp
 	global new_data_avail
+	global count
 	
 	while not terminate_thread:
 		
@@ -115,11 +119,12 @@ def write_data_to_db():
 
 		try:
 
-		
 			if new_data_avail:
 				
 				# Write points
 				#client.write_points(points) sensor_data["KegeratorTemp_F"]
+
+				print("Writing values to database...")
 
 				p = Point("Fermentation Chamber").tag("location", "Chamber 1").field("temperature", fermentation_chamber_temp_1)
 				write_api.write(bucket=BUCKET, record=p)	
@@ -131,11 +136,12 @@ def write_data_to_db():
 
 
 
+
 		except ConnectionRefusedError:
 			print("Cannot connect to server...will try again later.")
 		
 		finally:
-			sleep(30)
+			sleep(DB_WRITE_FREQ)
 
 
 
@@ -157,9 +163,10 @@ try:
 	thread_write_data_to_db.start()
 
 
-	sleep(10)
-
+except KeyboardInterrupt:
 	terminate_thread = 1
+	thread_get_sensor_data.join
+	thread_write_data_to_db.join
 
 finally:
 	print("Script terminated!")
