@@ -1,13 +1,11 @@
 # OB_BreweryMonitorLog
 
-### Install InfluxDB v1 by following these instructions
-https://pimylifeup.com/raspberry-pi-influxdb/
-
-### Install Grafana by following these instructions
-https://grafana.com/tutorials/install-grafana-on-raspberry-pi/
+### Install InfluxDB v2 and CLI by following these instructions
+(https://docs.influxdata.com/influxdb/v2/install/
+https://docs.influxdata.com/influxdb/v2/tools/influx-cli/
 
 ### Used this as a reference as well to connect InfluxDB to Grafana
-https://sandyjmacdonald.github.io/2021/12/29/setting-up-influxdb-and-grafana-on-the-raspberry-pi-4/
+https://docs.influxdata.com/influxdb/cloud/api-guide/client-libraries/python/
 
 ### Python code uses this repository
 https://github.com/influxdata/influxdb-python
