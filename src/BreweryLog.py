@@ -10,7 +10,9 @@ import math
 from datetime import datetime
 import time
 
-from influxdb import InfluxDBClient
+from influxdb_client import InfluxDBClient, Point
+from influxdb_client.client.write_api import SYNCHRONOUS
+
 from ISOtime import get_current_iso_time
 
 # DEBUG LEVEL
@@ -21,15 +23,18 @@ server_ip = "ashinkl-rpiz2w"
 server_port = 12345
 
 # db information (test for now)
-USER = 'admin'
-PASSWORD = 'admin'
+USER = 'ashinkl'
+PASSWORD = 'ashinkl123'
 DBNAME = 'TestDB'
+BUCKET = 'OstentatiousBrewing'
+INFLUXDB_API_TOKEN = 'l8yvgryXx262i3ilLlDo4CTaxOJPPfFaAtvuU7w8_Pm6BCyAV-LeDqLC4BO9qDPZPzlTtHPUcxFHWF21tKVx2Q=='
 
 host = "127.0.0.1" #check this
 port = 8086 #check this
 
 # global variables to communicate between threads
 terminate_thread = 0
+new_data_avail = False
 
 # function that gets the values of the data
 # and stores the values in global variables
@@ -42,9 +47,12 @@ def get_sensor_data():
 	global fermentation_chamber_temp_1
 	global fermentation_chamber_temp_2
 	global kegerator_temp
+	global new_data_avail
 	
 	while not terminate_thread:
 		
+
+		print("Running Thread: get_sensor_data")
 		
 		try:
 			# connect to the server which has the data
@@ -77,35 +85,79 @@ def get_sensor_data():
 			fermentation_chamber_temp_2 = sensor_data["FermentationChamberTemp2_F"]
 			kegerator_temp = sensor_data["KegeratorTemp_F"]
 
-			# Write points
-			#client.write_points(points) sensor_data["KegeratorTemp_F"]
+			new_data_avail = True
 
 			client_socket.close()
-		
+
 		except ConnectionRefusedError:
 			print("Cannot connect to server...will try again later.")
 		
 		finally:
 			sleep(1)
 
+# function that get the received
+# values from the global variables
+# and writes them to an influx db
+# designed to be run in a thread 
+def write_data_to_db():
+	
+	global terminate_thread
+	global keg_level_1
+	global keg_level_2
+	global fermentation_chamber_temp_1
+	global fermentation_chamber_temp_2
+	global kegerator_temp
+	global new_data_avail
+	
+	while not terminate_thread:
+		
+		print("Running Thread: write_data_to_db")
+
+		try:
+
+		
+			if new_data_avail:
+				
+				# Write points
+				#client.write_points(points) sensor_data["KegeratorTemp_F"]
+
+				p = Point("Fermentation Chamber").tag("location", "Chamber 1").field("temperature", fermentation_chamber_temp_1)
+				write_api.write(bucket=BUCKET, record=p)	
+
+				p = Point("Fermentation Chamber").tag("location", "Chamber 2").field("temperature", fermentation_chamber_temp_2)
+				write_api.write(bucket=BUCKET, record=p)
+
+				new_data_avail = False
+
+
+
+		except ConnectionRefusedError:
+			print("Cannot connect to server...will try again later.")
+		
+		finally:
+			sleep(30)
+
+
+
 # main program
 try:
 
+	client = InfluxDBClient(url="http://localhost:8086", token=INFLUXDB_API_TOKEN, org='home')
+	#client = InfluxDBClient.from_config_file("influx_db_config.ini") --> fix this...
+
+	write_api = client.write_api(write_options=SYNCHRONOUS)
+	query_api = client.query_api()
+	
 	# start the thread to get the information from the server
 	thread_get_sensor_data = threading.Thread(target=get_sensor_data)
-	thread_get_sensor_data.start()
+	thread_get_sensor_data.start()	
 
-
-	client = InfluxDBClient(host, port, USER, PASSWORD, DBNAME)
-
-	print("Create database: " + DBNAME)
-	client.create_database(DBNAME)
-	client.switch_database(DBNAME)
+	# start the thread to get the information from the server
+	thread_write_data_to_db = threading.Thread(target=write_data_to_db)
+	thread_write_data_to_db.start()
 
 
 	sleep(10)
-	# Write points
-	#client.write_points(points)
 
 	terminate_thread = 1
 
