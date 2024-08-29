@@ -1,16 +1,15 @@
-# OB_BreweryMonitorLog
+# :beer: OB_BreweryMonitorLog
 
 Ostentatious Brewing Brewery Log connects to the OB_BreweryMonitor server via a socket and saves the data to an Influx V2 Database
 
 ## Getting Started
 
-### 1.Install InfluxDB v2 and CLI
-First install the Influx DB v2 packages for RPi as a system service with systemd via the following [link]([https://docs.influxdata.com/influxdb/v2/install/?t=Linux](https://docs.influxdata.com/influxdb/v2/install/?t=Linux#install-influxdb-as-a-service-with-systemd))
+### 1.Install InfluxDB v2
+First install the Influx DB v2 packages for RPi as a system service with systemd via the following [link](https://docs.influxdata.com/influxdb/v2/install/?t=Linux#install-influxdb-as-a-service-with-systemd)
 
-https://docs.influxdata.com/influxdb/v2/tools/influx-cli/
+### 2. Install InfluxDB CLI
 
-### Used this as a reference as well to connect InfluxDB to Grafana
-https://docs.influxdata.com/influxdb/cloud/api-guide/client-libraries/python/
+Next, install the InfluxDB CLI so the InfluxDB can be modified from the command line via the following [link](https://docs.influxdata.com/influxdb/v2/tools/influx-cli/)
 
-### Python code uses this repository
-https://github.com/influxdata/influxdb-python
+### 3. Integrate the Python library
+Finally, integrate the python library in the code to access the InfluxDB via the following [link](https://docs.influxdata.com/influxdb/v2/api-guide/client-libraries/python/#Copyright)
