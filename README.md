@@ -14,5 +14,5 @@ Next, install the InfluxDB CLI so the InfluxDB can be modified from the command 
 ### 3. Integrate the Python library
 Finally, integrate the python library in the code to access the InfluxDB via the following [link](https://docs.influxdata.com/influxdb/v2/api-guide/client-libraries/python/#Copyright)
 
-
+### CHEERS! 
 <img src="https://github.com/user-attachments/assets/41fc754a-8408-4329-8b44-039c4653f6ce" alt="drawing" width="200"/>
