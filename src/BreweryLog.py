@@ -16,6 +16,9 @@ DEBUG = 1
 server_ip = "ashinkl-rpiz2w"
 server_port = 12345
 
+# TEST
+socket_err_cnt = 0
+
 # db information (test for now)
 # hostname and port 127.0.0.1:8086
 USER = 'ashinkl'
@@ -82,6 +85,10 @@ def get_sensor_data():
 
 			client_socket.close()
 
+		except socket.gaierror:
+			socket_err_cnt += 1
+			print(f"Socket Error Number: {socket_err_cnt}")
+
 		except ConnectionRefusedError:
 			print("Cannot connect to server...will try again later.")
 		
@@ -143,14 +150,20 @@ try:
 	write_api = client.write_api(write_options=SYNCHRONOUS)
 	query_api = client.query_api()
 	
-	# start the thread to get the information from the server
+	# create the thread to get the information from the server
 	thread_get_sensor_data = threading.Thread(target=get_sensor_data)
-	thread_get_sensor_data.start()	
 
-	# start the thread to write the information to the database
+	# create the thread to write the information to the database
 	thread_write_data_to_db = threading.Thread(target=write_data_to_db)
-	thread_write_data_to_db.start()
 
+	# keep the threads alive while the 
+	while True:
+	
+		if not thread_get_sensor_data.is_alive():
+			thread_get_sensor_data.start()	
+
+		if not thread_write_data_to_db.is_alive():
+			thread_write_data_to_db.start()
 
 except KeyboardInterrupt:
 	terminate_thread = 1
@@ -159,3 +172,4 @@ except KeyboardInterrupt:
 
 finally:
 	print("Script terminated!")
+	print(f"Socket Error Count: {socket_err_cnt}")
