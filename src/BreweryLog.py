@@ -63,9 +63,6 @@ def get_sensor_data():
 			# get sensor data from server
 			sensor_data = json.loads(data.decode())
 			
-			if DEBUG > 0:
-				print(sensor_data)
-			
 			# parse dictionary data
 			# dictionary elements: 
 				# FermentationChamberTemp1_F
