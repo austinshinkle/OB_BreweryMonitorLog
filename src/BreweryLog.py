@@ -63,13 +63,14 @@ def get_sensor_data():
 			# get the data from the socket
 			data = client_socket.recv(1024)
 			
-			if DEBUG > 0:
+			if DEBUG > 2:
 				print("Received from server:", data.decode())
 			
 			# get sensor data from server
 			sensor_data = json.loads(data.decode())
 
-			print(sensor_data)
+			if DEBUG > 1:
+				print(sensor_data)
 			
 			# parse dictionary data
 			# dictionary elements: 
@@ -85,10 +86,10 @@ def get_sensor_data():
 			fermentation_chamber_temp_2 = sensor_data["FermentationChamberTemp2_F"]
 			kegerator_temp = sensor_data["KegeratorTemp_F"]
 
+			client_socket.close()
+
 			# inform the other thread new data is available
 			new_data_avail = True
-
-			client_socket.close()
 
 		except socket.gaierror:
 			socket_err_cnt += 1
@@ -124,7 +125,7 @@ def get_outside_sensor_data():
 			# get the data from the socket
 			data = client_socket.recv(1024)
 			
-			if DEBUG > 0:
+			if DEBUG > 2:
 				print("Received from server:", data.decode())
 			
 			# get sensor data from server
@@ -136,22 +137,23 @@ def get_outside_sensor_data():
 				# RelativePressure_hPa
 				# Humidity_%
 				
-			print(outside_sensor_data)
+			if DEBUG > 1:
+				print(outside_sensor_data)
 
 			outside_temp = outside_sensor_data["Temperature_C"]
 			outside_temp = round((9 * float(outside_temp))/5  + 32,1)
 			outside_pressure = outside_sensor_data["RelativePressure_hPa"]
 			outside_humidity = outside_sensor_data["Humidity_%"]
 
+			client_socket.close()
+
 			# inform the other thread new data is available
 			new_outside_data_avail = True
-
-			client_socket.close()
 
 		except socket.gaierror:
 			socket_err_cnt += 1
 			print(f"Socket Error Number: {socket_err_cnt}")
-			terminate_thread = True ##DEFUGGING ONLY
+			terminate_thread = True ##DEBUGGING ONLY
 
 		except ConnectionRefusedError:
 			print("Cannot connect to server...will try again later.")
@@ -199,7 +201,7 @@ def write_data_to_db():
 				# set the data to stale
 				new_data_avail = False
 
-						# only write data if it is not stale
+			# only write data if it is not stale
 			if new_outside_data_avail:
 
 				print("Writing outside values to database...")
@@ -264,6 +266,7 @@ try:
 except KeyboardInterrupt:
 	terminate_thread = 1
 	thread_get_sensor_data.join
+	thread_get_outside_sensor_data.join
 	thread_write_data_to_db.join
 
 finally:
