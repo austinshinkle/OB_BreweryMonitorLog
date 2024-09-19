@@ -120,6 +120,7 @@ def get_outside_sensor_data():
 		try:
 			# connect to the server which has the data
 			client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			client_socket.settimeout(60)
 			client_socket.connect((outside_server_ip,outside_server_port))
 
 			# get the data from the socket
@@ -153,10 +154,12 @@ def get_outside_sensor_data():
 		except socket.gaierror:
 			socket_err_cnt += 1
 			print(f"Socket Error Number: {socket_err_cnt}")
-			terminate_thread = True ##DEBUGGING ONLY
 
 		except ConnectionRefusedError:
 			print("Cannot connect to server...will try again later.")
+
+		except socket.Timeouterror:
+			print("Cannot connect to server (timeout)...will try again later.")
 		
 		finally:
 			sleep(GET_SENSOR_DATA_FREQ)
@@ -241,27 +244,36 @@ try:
 	
 	# create the thread to get the information from the server
 	thread_get_sensor_data = threading.Thread(target=get_sensor_data)
+	thread_get_sensor_data.start()	
 
 	# create the thread to get the information from the outsude server
 	thread_get_outside_sensor_data = threading.Thread(target=get_outside_sensor_data)
+	thread_get_outside_sensor_data.start()	
 
 	# create the thread to write the information to the database
 	thread_write_data_to_db = threading.Thread(target=write_data_to_db)
+	thread_write_data_to_db.start()
 
 	# keep the threads alive and restarts them if they crash
 	while True:
 
 
 		if not thread_get_sensor_data.is_alive():
+
+			thread_get_sensor_data = threading.Thread(target=get_sensor_data)
 			thread_get_sensor_data.start()	
 
 		if not thread_get_outside_sensor_data.is_alive():
+
+			thread_get_outside_sensor_data = threading.Thread(target=get_outside_sensor_data)
 			thread_get_outside_sensor_data.start()	
 
 		if not thread_write_data_to_db.is_alive():
+			
+			thread_write_data_to_db = threading.Thread(target=write_data_to_db)
 			thread_write_data_to_db.start()
 
-		sleep(1)
+		sleep(10)
 
 except KeyboardInterrupt:
 	terminate_thread = 1
