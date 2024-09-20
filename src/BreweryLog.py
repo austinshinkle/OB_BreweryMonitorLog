@@ -30,8 +30,8 @@ PASSWORD = 'ashinkl123'
 BUCKET = 'OstentatiousBrewing'
 INFLUXDB_API_TOKEN = 'l8yvgryXx262i3ilLlDo4CTaxOJPPfFaAtvuU7w8_Pm6BCyAV-LeDqLC4BO9qDPZPzlTtHPUcxFHWF21tKVx2Q=='
 INFLUXDB_ORG = 'home'
-DB_WRITE_FREQ = 10
-GET_SENSOR_DATA_FREQ = 4
+DB_WRITE_FREQ = 60
+GET_SENSOR_DATA_FREQ = 55
 
 # global variables to communicate between threads
 terminate_thread = 0
@@ -134,7 +134,7 @@ def get_outside_sensor_data():
 			
 			# parse dictionary data
 			# dictionary elements: 
-				# Temperature_C
+				# Temperature_CRunning Thread: get_sensor_data
 				# RelativePressure_hPa
 				# Humidity_%
 				
